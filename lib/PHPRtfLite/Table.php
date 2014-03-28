@@ -100,6 +100,11 @@ class PHPRtfLite_Table
      */
     protected $_preventEmptyParagraph = false;
 
+    /**
+     * flag for making the table autofile
+     */
+    protected $_autofill = false;
+
 
     /**
      * constructor
@@ -220,6 +225,24 @@ class PHPRtfLite_Table
         return $this->_firstRowIsHeader;
     }
 
+    /**
+     * Sets that table won't be splited by a page break. By default page break splits table.
+     */
+    public function setAutofill()
+    {
+        $this->_autofill = true;
+    }
+
+
+    /**
+     * returns true, if a table should not be splited by a page break
+     *
+     * @return boolean
+     */
+    public function isAutofill()
+    {
+        return $this->_autofill;
+    }
 
     /**
      * gets alignment
@@ -903,7 +926,11 @@ class PHPRtfLite_Table
     {
         $rowIndex = $row->getRowIndex();
         $stream = $this->getRtf()->getWriter();
-        $stream->write('\trowd');
+        $stream->write('\trowd ');
+
+        if ($this->isAutofill()) {
+            $stream->write('\trautofit1 ');
+        }
 
         if ($this->_alignment) {
             switch ($this->_alignment) {
@@ -948,7 +975,12 @@ class PHPRtfLite_Table
 
                 // cell width
                 $width += PHPRtfLite_Unit::getUnitInTwips($cell->getWidth());
-                $stream->write('\cellx' . $width);
+                if ($this->isAutofill()) {
+                    $stream->write('\clftsWidth1\cellx' . ($columnIndex + 1));
+                }
+                else {
+                    $stream->write('\cellx' . $width);
+                }
             }
         }
     }
